@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Đoán Tên Quốc Gia</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #45a29e;
+        text-align: center;
+        margin-top: 50px;
+      }
+      #hint {
+        display: block;
+        margin: 20px auto;
+        width: 300px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+      input {
+        padding: 10px;
+        font-size: 18px;
+        text-transform: uppercase;
+      }
+      button {
+        padding: 10px 15px;
+        font-size: 16px;
+        margin-left: 5px;
+        cursor: pointer;
+      }
+      #word {
+        letter-spacing: 5px;
+        font-size: 28px;
+        margin: 20px;
+        font-weight: bold;
+      }
+      #message {
+        font-size: 20px;
+        margin-top: 10px;
+        color: #dfe706;
+      }
+      #completed {
+        display: none;
+        font-size: 50px;
+        font-weight: bold;
+        margin-top: 40px;
+        color: yellow;
+        text-shadow: 3px 3px 5px rgb(213, 200, 20);
+      }
+      #gameover {
+        display: none;
+        font-size: 55px;
+        font-weight: bold;
+        color: red;
+        margin-top: 50px;
+        text-shadow: 3px 3px 5px black;
+      }
+      #retryBtn {
+        display: none;
+        margin-top: 20px;
+        padding: 12px 25px;
+        font-size: 22px;
+        background: #ff3333;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: white;
+      }
+      #scoreboard {
+        margin-top: 20px;
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Trò Chơi Đoán Quốc Gia</h1>
+
+    <div id="completed">🎉 BẠN ĐÃ VƯỢT QUA MÀN NÀY RỒI!</div>
+    <div id="gameover">❌ BẠN THUA RỒI!</div>
+
+    <button id="retryBtn" onclick="resetGame()">🔄 Thử lại</button>
+
+    <img id="hint" src="" />
+    <div id="word"></div>
+
+    <input
+      type="text"
+      id="guess"
+      maxlength="20"
+      placeholder="Nhập ..."
+      onkeydown="if(event.key==='Enter'){makeGuess();}"
+    />
+    <button id="guessBtn" onclick="makeGuess()">Đoán</button>
+
+    <div id="message"></div>
+
+    <div id="scoreboard">
+      <p>Điểm: <span id="score">0</span></p>
+      <p id="triesContainer">Số lần sai còn lại: <span id="tries">3</span></p>
+    </div>
+
+    <script>
+      const words = [
+        "VIETNAM",
+        "MALAYSIA",
+        "THAILAND",
+        "CHINA",
+        "GERMANY",
+        "FRANCE",
+        "CANADA",
+        "AMERICA",
+        "AUSTRALIA",
+        "CAMBODIA",
+        "INDIA",
+        "IRAN",
+        "ITALY",
+        "JAPAN",
+        "MEXICO",
+        "MONACO",
+        "NETHERLAND",
+        "NORWAY",
+        "PANAMA",
+        "PORTUGAL",
+        "SINGAPORE",
+        "SPAIN",
+        "SWEDEN",
+      ];
+
+      const imageMap = {
+        VIETNAM: "./flag/VIETNAM.jpg",
+        MALAYSIA: "./flag/MALAYSIA.jpg",
+        THAILAND: "./flag/THAILAND.jpg",
+        CHINA: "./flag/CHINA.jpg",
+        GERMANY: "./flag/GERMANY.jpg",
+        FRANCE: "./flag/FRANCE.jpg",
+        CANADA: "./flag/CANADA.jpg",
+        AMERICA: "./flag/AMERICAN.jpg",
+        AUSTRALIA: "./flag/AUSTRALIA.jpg",
+        CAMBODIA: "./flag/CAMBODIA.jpg",
+        INDIA: "./flag/INDIA.jpg",
+        IRAN: "./flag/IRAN.jpg",
+        ITALY: "./flag/ITALY.jpg",
+        JAPAN: "./flag/JAPAN.jpg",
+        MEXICO: "./flag/MEXICO.jpg",
+        MONACO: "./flag/MONACO.jpg",
+        NETHERLAND: "./flag/NETHERLAND.jpg",
+        NORWAY: "./flag/NORWAY.jpg",
+        PANAMA: "./flag/PANAMA.jpg",
+        PORTUGAL: "./flag/PORTUGAL.jpg",
+        SINGAPORE: "./flag/SINGAPORE.jpg",
+        SPAIN: "./flag/SPAIN.jpg",
+        SWEDEN: "./flag/SWEDEN.jpg",
+      };
+
+      let maxTries = 3,
+        wrong = 0,
+        score = 0,
+        word = "",
+        guessed = [],
+        usedWords = [];
+
+      function startGame() {
+        document.getElementById("retryBtn").style.display = "none";
+        document.getElementById("guessBtn").style.display = "inline-block";
+        document.getElementById("triesContainer").style.display = "block";
+        if (usedWords.length === words.length) {
+          document.getElementById("completed").style.display = "block";
+          hideGameUI();
+          return;
+        }
+        beginNewWord();
+      }
+
+      function hideGameUI() {
+        document.getElementById("hint").style.display = "none";
+        document.getElementById("word").style.display = "none";
+        document.getElementById("guess").style.display = "none";
+        document.getElementById("message").style.display = "none";
+      }
+
+      function beginNewWord() {
+        const remaining = words.filter((w) => !usedWords.includes(w));
+        word = remaining[Math.floor(Math.random() * remaining.length)];
+        usedWords.push(word);
+        guessed = Array(word.length).fill("_");
+        document.getElementById("hint").src = imageMap[word];
+        document.getElementById("message").textContent = "";
+        document.getElementById("hint").style.display = "block";
+        document.getElementById("word").style.display = "block";
+        document.getElementById("guess").style.display = "inline-block";
+        document.getElementById("message").style.display = "block";
+        updateDisplay();
+      }
+
+      function updateDisplay() {
+        document.getElementById("word").textContent = guessed.join(" ");
+        document.getElementById("score").textContent = score;
+        document.getElementById("tries").textContent = Math.max(
+          0,
+          maxTries - wrong
+        );
+      }
+
+      function handleWrong() {
+        wrong++;
+        updateDisplay();
+        if (wrong >= maxTries) {
+          document.getElementById("gameover").style.display = "block";
+          document.getElementById("retryBtn").style.display = "inline-block";
+          document.getElementById("guessBtn").style.display = "none";
+          document.getElementById("triesContainer").style.display = "none";
+          hideGameUI();
+          return;
+        }
+        document.getElementById("message").textContent = `❌ Sai! Còn ${
+          maxTries - wrong
+        } lượt — câu tiếp theo...`;
+        setTimeout(() => startGame(), 700);
+      }
+
+      function makeGuess() {
+        const input = document.getElementById("guess");
+        let guess = input.value.toUpperCase().trim();
+        input.value = "";
+        if (!guess) return;
+
+        if (guess === word) {
+          guessed = word.split("");
+          score++;
+          updateDisplay();
+          setTimeout(() => startGame(), 700);
+        } else {
+          handleWrong();
+        }
+      }
+
+      function resetGame() {
+        wrong = 0;
+        score = 0;
+        guessed = [];
+        usedWords = [];
+        document.getElementById("gameover").style.display = "none";
+        document.getElementById("completed").style.display = "none";
+        startGame();
+      }
+
+      startGame();
+    </script>
+  </body>
+</html>
